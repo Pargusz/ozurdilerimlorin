@@ -69,21 +69,17 @@
   const question = document.getElementById("question");
   const yay = document.getElementById("yay");
 
-  const noLabels = [
-    "Hayır",
-    "Emin misin? 🤨",
-    "Yakalayamazsın 😝",
-    "Olmaaaz 🥺",
-    "Tekrar düşün 🤔",
-    "Boşuna uğraşma 😌",
-    "Evet'e bas bence 👉",
-    "Hâlâ mı? 😭"
-  ];
+  // Hayır butonu 3 kez kaçar, sonra yakalanabilir
+  const MAX_ESCAPES = 3;
+  const escapeLabels = ["Emin misin? 🤨", "Yakalayamazsın 😝"];
 
   let tries = 0;
   let placeholder = null;
   let lastFlee = 0;
   let done = false;
+  let saidNo = false;
+
+  const tired = () => tries >= MAX_ESCAPES;
 
   function viewport() {
     return {
@@ -102,7 +98,7 @@
   }
 
   function flee(px, py, force) {
-    if (done) return;
+    if (done || tired()) return;
     const now = performance.now();
     if (!force && now - lastFlee < 220) return;
     lastFlee = now;
@@ -124,7 +120,8 @@
     }
 
     tries++;
-    no.textContent = noLabels[1 + ((tries - 1) % (noLabels.length - 1))];
+    // son kaçışta yine "Hayır" yazsın, artık basılabilir
+    no.textContent = tired() ? "Hayır" : escapeLabels[(tries - 1) % escapeLabels.length];
 
     const w = no.offsetWidth;
     const h = no.offsetHeight;
@@ -165,17 +162,18 @@
     if (e.pointerType !== "touch") flee(e.clientX, e.clientY);
   });
 
-  // Fare ile basmaya çalışırsa da kaç
+  // Fare ile basmaya çalışırsa da kaç (3 kaçıştan sonra artık basılabilir)
   no.addEventListener("pointerdown", (e) => {
-    if (e.pointerType === "touch") return; // dokunmayı aşağıda yakalıyoruz
+    if (e.pointerType === "touch" || tired()) return; // dokunmayı aşağıda yakalıyoruz
     e.preventDefault();
     flee(e.clientX, e.clientY, true);
   });
 
-  // Telefonda dokununca: tıklamayı tamamen engelle ve kaç
+  // Telefonda dokununca: ilk 3 seferde tıklamayı engelle ve kaç
   no.addEventListener(
     "touchstart",
     (e) => {
+      if (tired()) return;
       e.preventDefault();
       const t = e.touches[0];
       flee(t.clientX, t.clientY, true);
@@ -183,13 +181,53 @@
     { passive: false }
   );
 
-  // Hiçbir şekilde "tıklanmasın" (klavye ile Enter/Space dahil)
+  // 3 kaçıştan önce tıklanamaz (klavye ile Enter/Space dahil), sonra "Haaaayıııııırrrr" çıkar
   no.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (tired()) {
+      sayNo();
+      return;
+    }
     const r = no.getBoundingClientRect();
     flee(r.left + r.width / 2, r.top + r.height / 2, true);
   });
+
+  function restart(el, cls) {
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+  }
+
+  function sayNo() {
+    if (done || saidNo) return;
+    saidNo = true;
+
+    const r = no.getBoundingClientRect();
+    burst(r.left + r.width / 2, r.top + r.height / 2, 10, ["😭", "💔", "🥺"]);
+
+    const big = document.createElement("button");
+    big.type = "button";
+    big.className = "btn no-big";
+    big.textContent = "Haaaayıııııırrrr 😭";
+
+    // Butonu tekrar Evet'in yanına koy
+    if (placeholder) {
+      placeholder.replaceWith(big);
+      placeholder = null;
+    } else {
+      buttons.appendChild(big);
+    }
+    no.remove();
+
+    big.addEventListener("click", () => {
+      const b = big.getBoundingClientRect();
+      burst(b.left + b.width / 2, b.top + b.height / 2, 12, ["😭", "💔", "🥺", "😿"]);
+      restart(document.body, "shake");
+      restart(yes, "pulse");
+      try { navigator.vibrate && navigator.vibrate(120); } catch (_) {}
+    });
+  }
 
   // Fare yaklaşınca bile kaçsın
   document.addEventListener("pointermove", (e) => {
