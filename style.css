@@ -1,0 +1,368 @@
+:root {
+  --ink: #4a2a4e;
+  --ink-soft: #7d5d84;
+  --pink: #ff6aa6;
+  --pink-deep: #e5408a;
+  --pink-soft: #ffd2e5;
+  --lilac: #a98bf0;
+  --lilac-deep: #7d59d6;
+  --paper: #fffdf9;
+  --bg-1: #fff0f6;
+  --bg-2: #f3eaff;
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: "Fredoka", ui-rounded, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--bg-1);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Arka plan: sabit, iOS'ta da düzgün dursun diye ayrı katman */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at 12% 8%, #ffd9ea 0, transparent 45%),
+    radial-gradient(ellipse at 90% 92%, #e6d8ff 0, transparent 50%),
+    radial-gradient(ellipse at 85% 12%, #ffe9f3 0, transparent 40%),
+    linear-gradient(160deg, var(--bg-1), var(--bg-2));
+}
+
+/* Uçuşan kalpler */
+.hearts {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.hearts span {
+  position: absolute;
+  bottom: -40px;
+  line-height: 1;
+  opacity: .32;
+  animation: rise linear infinite;
+  will-change: transform;
+}
+@keyframes rise {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50%  { transform: translate3d(18px, -55vh, 0) rotate(12deg); }
+  100% { transform: translate3d(-8px, -115vh, 0) rotate(-6deg); }
+}
+
+/* ---------- Sayfa düzeni (telefon önce) ---------- */
+.page {
+  --base: min(25vw, 140px);
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "a"
+    "head"
+    "b"
+    "ask";
+  max-width: 620px;
+  margin: 0 auto;
+  padding:
+    max(18px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right))
+    max(56px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+.stickers--a { grid-area: a; }
+.head        { grid-area: head; }
+.stickers--b { grid-area: b; }
+.ask         { grid-area: ask; }
+
+/* ---------- Çıkartmalar (resimler) ---------- */
+.stickers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+}
+/* Telefonda alttaki resimler: 3 + 2 buket düzeni */
+.stickers--b {
+  --base: min(31vw, 168px);
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  justify-items: center;
+  padding: 18px 0 8px;
+}
+.stickers--b .sticker { grid-column: span 2; margin: 0 -2vw; }
+.stickers--b .sticker:nth-child(4) { grid-column: 2 / span 2; margin-top: -6px; }
+.stickers--b .sticker:nth-child(5) { grid-column: 4 / span 2; margin-top: -6px; }
+
+.sticker {
+  width: calc(var(--base) * var(--w, 1));
+  margin: 0 -1.2vw;
+  translate: 0 var(--dy, 0);
+  animation: bob var(--dur, 6s) ease-in-out var(--delay, 0s) infinite;
+  will-change: transform;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.sticker img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  /* beyaz çıkartma kenarı + yumuşak gölge */
+  filter:
+    drop-shadow(2.5px 0 0 #fff)
+    drop-shadow(-2.5px 0 0 #fff)
+    drop-shadow(0 2.5px 0 #fff)
+    drop-shadow(0 -2.5px 0 #fff)
+    drop-shadow(0 8px 10px rgba(122, 52, 104, .2));
+  transition: transform .35s cubic-bezier(.3, 1.6, .5, 1);
+}
+@media (hover: hover) {
+  .sticker:hover img { transform: scale(1.08) rotate(-4deg); }
+}
+.sticker.pop img { animation: pop .5s cubic-bezier(.3, 1.6, .5, 1); }
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50%      { transform: translateY(-9px) rotate(calc(var(--r, 0deg) + 3deg)); }
+}
+@keyframes pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.18) rotate(6deg); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- Başlık ---------- */
+.head { text-align: center; }
+
+.to {
+  display: inline-block;
+  margin: 6px 0 12px;
+  padding: 6px 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--pink-deep);
+  background: rgba(255, 255, 255, .85);
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(229, 64, 138, .14);
+}
+
+h1 { margin: 0; line-height: 1; }
+.l1 {
+  display: block;
+  font-weight: 700;
+  font-size: clamp(2.5rem, 11.5vw, 4.4rem);
+  letter-spacing: -.01em;
+  color: var(--ink);
+}
+.l2 {
+  display: block;
+  margin-top: .02em;
+  font-family: "Caveat", "Fredoka", cursive;
+  font-weight: 700;
+  font-size: clamp(2.8rem, 13vw, 5rem);
+  color: var(--pink-deep);
+  transform: rotate(-3deg);
+  text-shadow: 0 3px 0 #fff, 0 6px 18px rgba(229, 64, 138, .25);
+}
+
+/* Not kağıdı */
+.note {
+  position: relative;
+  max-width: 470px;
+  margin: 30px auto 0;
+  padding: 26px 22px 18px;
+  font-family: "Caveat", cursive;
+  font-weight: 600;
+  font-size: clamp(1.5rem, 6.4vw, 1.8rem);
+  line-height: 1.22;
+  color: var(--ink);
+  background: var(--paper);
+  border-radius: 18px;
+  box-shadow:
+    0 1px 0 #f3e3ec,
+    0 14px 34px rgba(140, 62, 118, .14);
+  transform: rotate(-1.3deg);
+}
+.note::before {
+  /* bant */
+  content: "";
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  width: 116px;
+  height: 28px;
+  transform: translateX(-50%) rotate(3deg);
+  background: rgba(255, 170, 208, .72);
+  border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(229, 64, 138, .12);
+}
+.note p { margin: 0 0 8px; }
+.note p:last-child { margin-bottom: 0; }
+.note strong { color: var(--pink-deep); font-weight: 700; }
+.nowrap { white-space: nowrap; }
+
+/* ---------- Soru + butonlar ---------- */
+.ask {
+  padding: 22px 0 10px;
+  text-align: center;
+}
+.ask h2 {
+  margin: 0 0 22px;
+  font-weight: 600;
+  font-size: clamp(1.65rem, 7vw, 2.3rem);
+  line-height: 1.15;
+}
+.ask h2 .plz { color: var(--pink-deep); }
+.ask h2 .name { color: var(--lilac-deep); }
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  min-height: 72px;
+  transition: opacity .35s, transform .35s;
+}
+.buttons.done { opacity: 0; transform: scale(.9); }
+
+.btn {
+  font: inherit;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 16px 34px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  white-space: nowrap;
+}
+.btn:focus-visible { outline: 3px solid var(--lilac-deep); outline-offset: 4px; }
+
+.yes {
+  color: #fff;
+  background: linear-gradient(180deg, #ff86b9, #ff4f96);
+  box-shadow: 0 7px 0 #d23a7c, 0 14px 26px rgba(229, 64, 138, .35);
+  transform: scale(var(--grow, 1));
+  transition: transform .3s cubic-bezier(.3, 1.6, .5, 1), box-shadow .15s, translate .15s;
+}
+.yes:hover { filter: brightness(1.04); }
+.yes:active { translate: 0 4px; box-shadow: 0 3px 0 #d23a7c, 0 8px 16px rgba(229, 64, 138, .3); }
+
+.no {
+  color: var(--ink-soft);
+  background: #fff;
+  box-shadow: 0 6px 0 #eadcf1, 0 10px 20px rgba(122, 52, 104, .12);
+  touch-action: none;
+}
+.no.is-running {
+  position: fixed;
+  z-index: 50;
+  margin: 0;
+  transition:
+    left .38s cubic-bezier(.3, 1.4, .5, 1),
+    top .38s cubic-bezier(.3, 1.4, .5, 1);
+}
+.btn-placeholder { display: inline-block; visibility: hidden; }
+
+/* Evet'e basınca */
+.yay { animation: yay-in .6s cubic-bezier(.3, 1.6, .5, 1) both; }
+.yay[hidden] { display: none; }
+.yay img {
+  display: block;
+  width: min(40vw, 190px);
+  height: auto;
+  margin: 0 auto 10px;
+  filter: drop-shadow(0 10px 14px rgba(122, 52, 104, .2));
+  animation: bob 3.2s ease-in-out infinite;
+}
+.yay-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(2rem, 9vw, 2.8rem);
+  color: var(--pink-deep);
+}
+.yay-text {
+  margin: 6px 0 0;
+  font-family: "Caveat", cursive;
+  font-weight: 700;
+  font-size: clamp(1.6rem, 7vw, 2.1rem);
+}
+@keyframes yay-in {
+  from { opacity: 0; transform: scale(.6) translateY(20px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.celebrate .sticker img { animation: hop .55s ease-in-out calc(var(--i) * 60ms) 3; }
+@keyframes hop {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-22px) rotate(-6deg); }
+}
+
+/* Konfeti parçacıkları */
+.particle {
+  position: fixed;
+  z-index: 60;
+  left: 0;
+  top: 0;
+  line-height: 1;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* ---------- Geniş ekran: resimler etrafta ---------- */
+@media (min-width: 960px) {
+  .page {
+    --base: clamp(96px, 10.5vw, 168px);
+    max-width: 1320px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 560px) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "a head b"
+      "a ask  b";
+    align-content: center;
+    column-gap: clamp(12px, 2.5vw, 40px);
+    padding-top: 28px;
+    padding-bottom: 28px;
+  }
+  .stickers { padding: 0; align-self: center; }
+  .stickers--b { --base: inherit; display: flex; padding: 0; }
+  .sticker,
+  .stickers--b .sticker,
+  .stickers--b .sticker:nth-child(n) { margin: 6px 8px; }
+  .ask { padding-top: 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker,
+  .yay img,
+  .hearts span { animation: none !important; }
+  .sticker { transform: rotate(var(--r, 0deg)); }
+  .celebrate .sticker img { animation: none; }
+  .no.is-running { transition: none; }
+}
